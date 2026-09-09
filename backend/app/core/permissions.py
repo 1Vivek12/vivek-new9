@@ -1,4 +1,4 @@
-"""Role-based editorial permissions scoped to tenant context."""
+"""Role-based editorial and trend radar permissions scoped to tenant context."""
 
 from typing import Set
 
@@ -20,6 +20,10 @@ ROLE_PERMISSIONS = {
         "APPROVE_CONTENT",
         "REJECT_CONTENT",
         "MANAGE_CATEGORIES",
+        "VIEW_SOURCES",
+        "MANAGE_SOURCES",
+        "VIEW_TRENDS",
+        "MANAGE_OPPORTUNITIES",
     },
     "TENANT_OWNER": {
         "VIEW_EDITORIAL",
@@ -33,6 +37,10 @@ ROLE_PERMISSIONS = {
         "APPROVE_CONTENT",
         "REJECT_CONTENT",
         "MANAGE_CATEGORIES",
+        "VIEW_SOURCES",
+        "MANAGE_SOURCES",
+        "VIEW_TRENDS",
+        "MANAGE_OPPORTUNITIES",
     },
     "TENANT_ADMIN": {
         "VIEW_EDITORIAL",
@@ -46,6 +54,10 @@ ROLE_PERMISSIONS = {
         "APPROVE_CONTENT",
         "REJECT_CONTENT",
         "MANAGE_CATEGORIES",
+        "VIEW_SOURCES",
+        "MANAGE_SOURCES",
+        "VIEW_TRENDS",
+        "MANAGE_OPPORTUNITIES",
     },
     "EDITOR": {
         "VIEW_EDITORIAL",
@@ -59,6 +71,10 @@ ROLE_PERMISSIONS = {
         "APPROVE_CONTENT",
         "REJECT_CONTENT",
         "MANAGE_CATEGORIES",
+        "VIEW_SOURCES",
+        "MANAGE_SOURCES",
+        "VIEW_TRENDS",
+        "MANAGE_OPPORTUNITIES",
     },
     "CONTENT_MANAGER": {
         "VIEW_EDITORIAL",
@@ -71,6 +87,9 @@ ROLE_PERMISSIONS = {
         "REQUEST_APPROVAL",
         "APPROVE_CONTENT",
         "REJECT_CONTENT",
+        "VIEW_SOURCES",
+        "VIEW_TRENDS",
+        "MANAGE_OPPORTUNITIES",
     },
     "REPORTER": {
         "VIEW_EDITORIAL",
@@ -79,6 +98,8 @@ ROLE_PERMISSIONS = {
         "ADD_SOURCE",
         "CREATE_VERSION",
         "REQUEST_APPROVAL",
+        "VIEW_SOURCES",
+        "VIEW_TRENDS",
     },
     "CREATOR": {
         "VIEW_EDITORIAL",
@@ -87,12 +108,18 @@ ROLE_PERMISSIONS = {
         "ADD_SOURCE",
         "CREATE_VERSION",
         "REQUEST_APPROVAL",
+        "VIEW_SOURCES",
+        "VIEW_TRENDS",
     },
     "ANALYST": {
         "VIEW_EDITORIAL",
+        "VIEW_SOURCES",
+        "VIEW_TRENDS",
     },
     "VIEWER": {
         "VIEW_EDITORIAL",
+        "VIEW_SOURCES",
+        "VIEW_TRENDS",
     },
 }
 

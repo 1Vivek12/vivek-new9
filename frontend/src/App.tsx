@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { HealthDashboard } from './components/HealthDashboard';
 import { EditorialNewsroom } from './components/EditorialNewsroom';
+import { TrendRadarWorkspace } from './components/TrendRadarWorkspace';
 
 export const App = () => {
-  const [activeView, setActiveView] = useState<'editorial' | 'foundation'>('editorial');
+  const [activeView, setActiveView] = useState<'radar' | 'editorial' | 'foundation'>('radar');
 
   // First seeded tenant: News 9 workspace profile
   const tenantProfile = {
@@ -38,19 +39,42 @@ export const App = () => {
             <div>
               <h1 style={{ fontSize: '1.25rem', fontWeight: 700 }}>News 9 Automation Platform</h1>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                Editorial Content Core &middot; Phase 2 Workspace
+                Trend Radar &amp; Source Monitoring &middot; Phase 3 Workspace
               </p>
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span className="badge badge-green">Phase 2 Core</span>
+          <span className="badge badge-green">Phase 3 Verified</span>
         </div>
       </header>
 
       {/* Primary Workspace Navigation */}
-      <nav style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
+      <nav
+        style={{
+          display: 'flex',
+          gap: '1.5rem',
+          marginBottom: '2rem',
+          borderBottom: '1px solid var(--border-subtle)',
+          paddingBottom: '0.5rem',
+        }}
+      >
+        <button
+          onClick={() => setActiveView('radar')}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: activeView === 'radar' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontWeight: activeView === 'radar' ? 700 : 500,
+            borderBottom: activeView === 'radar' ? '2px solid var(--accent-red)' : 'none',
+            paddingBottom: '0.5rem',
+            cursor: 'pointer',
+            fontSize: '1rem',
+          }}
+        >
+          📡 Trend Radar
+        </button>
         <button
           onClick={() => setActiveView('editorial')}
           style={{
@@ -64,7 +88,7 @@ export const App = () => {
             fontSize: '1rem',
           }}
         >
-          Editorial Newsroom
+          📰 Editorial Newsroom
         </button>
         <button
           onClick={() => setActiveView('foundation')}
@@ -79,12 +103,14 @@ export const App = () => {
             fontSize: '1rem',
           }}
         >
-          System Foundation &amp; Health
+          ⚙️ System Foundation &amp; Health
         </button>
       </nav>
 
       <main>
-        {activeView === 'editorial' ? (
+        {activeView === 'radar' ? (
+          <TrendRadarWorkspace />
+        ) : activeView === 'editorial' ? (
           <EditorialNewsroom />
         ) : (
           <>
@@ -126,22 +152,22 @@ export const App = () => {
             <HealthDashboard />
 
             <div className="card">
-              <h2>Phase 2 Architectural Invariants</h2>
+              <h2>Phase 3 Architectural Invariants</h2>
               <ul style={{ paddingLeft: '1.5rem', color: 'var(--text-secondary)', lineHeight: '1.8' }}>
                 <li>
-                  <strong style={{ color: 'var(--text-primary)' }}>Strict Tenant Isolation:</strong> Every category, assignment, story, source, and version is bound to a verified <code>tenant_id</code>.
+                  <strong style={{ color: 'var(--text-primary)' }}>Deterministic Trend Scoring:</strong> Transparent formula combining freshness decay, mention velocity, publisher diversity, and source authority.
                 </li>
                 <li>
-                  <strong style={{ color: 'var(--text-primary)' }}>Deterministic Editorial Lifecycle:</strong> Strictly defined state machine (IDEA &rarr; ASSIGNED &rarr; RESEARCHING &rarr; DRAFT &rarr; VALIDATION &rarr; APPROVAL_REQUIRED &rarr; APPROVED &rarr; PUBLISHED).
+                  <strong style={{ color: 'var(--text-primary)' }}>Bounded RSS/Atom Ingestion:</strong> Safe XML parsing with entity expansion disabled, payload byte capping, and non-crawling policy.
                 </li>
                 <li>
-                  <strong style={{ color: 'var(--text-primary)' }}>Human Editorial Publishing Guard:</strong> AI generation cannot bypass human editorial sign-off.
+                  <strong style={{ color: 'var(--text-primary)' }}>Strict SSRF &amp; Network Defense:</strong> Blocking private IPv4, IPv6 loopback, cloud metadata endpoints, and non-HTTP protocols.
                 </li>
                 <li>
-                  <strong style={{ color: 'var(--text-primary)' }}>Immutable Story Versioning:</strong> Revision snapshots are immutable records of editorial draft progression.
+                  <strong style={{ color: 'var(--text-primary)' }}>Mandatory Human Editorial Review:</strong> Opportunities must be explicitly accepted or converted into Stories in IDEA status; no auto-publishing.
                 </li>
                 <li>
-                  <strong style={{ color: 'var(--text-primary)' }}>Source Metadata Boundary:</strong> Extensible citation metadata without web scraping, crawling, or unverified automated URL fetching.
+                  <strong style={{ color: 'var(--text-primary)' }}>Full Tenant &amp; Audit Isolation:</strong> All sources, items, groups, opportunities, and actions are tenant-scoped and audit-logged.
                 </li>
               </ul>
             </div>

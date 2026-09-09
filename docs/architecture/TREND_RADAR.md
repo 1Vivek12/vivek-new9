@@ -1,76 +1,121 @@
-# Trend Radar & Topic-to-Content Architecture
+# Trend Radar Architecture Specification
 
-## 1. Vision & Purpose
+## Overview
 
-Trend Radar is a future intelligent intelligence-gathering and topic-evaluation engine for newsrooms, YouTube creators, and media publishers. It enables a tenant to monitor regional, national, or niche topics (e.g., "Gorakhpur", "Uttar Pradesh", "AI", "Technology", "Cricket", "Jobs") and uncover genuine, verifiable content opportunities.
+The **Trend Radar** is an editorial discovery and source-monitoring subsystem designed to enable newsrooms and editors to detect emerging content opportunities from verified, approved external and internal information sources.
 
-> **Phase 1 Boundary**: The Trend Radar is **NOT** implemented in Phase 1. Only architectural interfaces, domain boundaries, data contracts, and anti-scraping principles are established in this document.
+> [!IMPORTANT]
+> **Human Editorial Invariant**: The Trend Radar is strictly an informational discovery and editorial research system. It does **NOT** automatically publish content, generate public output, or bypass human editorial review. Every content opportunity must be explicitly reviewed, accepted, or converted by an editor into a Phase 2 Story in the initial `IDEA` state.
 
 ---
 
-## 2. Topic-to-Content Pipeline (Future Workflow)
+## Core Pipeline Architecture
 
-```text
-Topic Query / Alert
-       ↓
-Trend Detection (Velocity & Social Signals)
-       ↓
-Source Discovery (Official / Public / Licensed)
-       ↓
-Duplicate Detection & Cluster Grouping
-       ↓
-Fact / Context Verification
-       ↓
-Trend Scoring Engine (0 - 100)
-       ↓
-Story Opportunity & Editorial Brief
-       ↓
-Human Editorial Decision (MAKE NOW / VERIFY FIRST / DO NOT PUBLISH)
-       ↓
-AI Content Generation (Script, Hook, Storyboard)
-       ↓
-Deterministic Backend Validation
-       ↓
-Mandatory Human Approval Sign-off
-       ↓
-Multi-Platform Publishing
+```
+Topic Search Query
+    ↓
+Source Registry (Tenant-Scoped, Rights & Trust Level)
+    ↓
+Network Safety & SSRF Guard (Blocked Private IPs, Schemes, Timeouts)
+    ↓
+RSS / Atom Ingestion & Normalization (Safe XML Parsing, Payload Cap 2MB)
+    ↓
+Source Items (Canonical URL, SHA-256 Fingerprint, Summaries Only)
+    ↓
+Duplicate & Similar Story Grouping (Deterministic Token Jaccard Overlap)
+    ↓
+Explainable Trend Scoring (Freshness + Velocity + Diversity + Authority + Relevance)
+    ↓
+Content Opportunity (Urgency, Confidence, Risk Signals, Explanation)
+    ↓
+Human Editorial Action (Accept / Reject / Convert to Phase 2 Story)
+    ↓
+Phase 2 Story in 'IDEA' Status (Attached StorySources, Full Audit Isolation)
 ```
 
 ---
 
-## 3. Strict Anti-Scraping & Legal Rights Policy
+## Scoring Formula & Deterministic Signals
 
-**Topic-to-Content does NOT mean content scraping or unauthorized aggregation.**
+The platform rejects opaque black-box metrics. Every trend score is deterministic, transparent, and explainable on a 0–100 scale:
 
-The platform strictly prohibits scraping copyrighted articles or videos for verbatim republication. The architecture enforces:
-1. **Source Provenance**: Every content proposal must maintain clear metadata tracking:
-   - Primary source type: `OFFICIAL_GOVERNMENT_RELEASE`, `PUBLIC_STATEMENT`, `LICENSED_WIRE_FEED`, `USER_OWNED_MEDIA`, `VERIFIED_PUBLIC_DATA`.
-   - Source URL, timestamp, and confidence rating.
-2. **Original Synthesis**: AI models generate original reporting angles, scripts, and analyses based on raw facts, never duplicating protected expression.
-3. **Rights Clearance**: Output content tracks rights metadata for video clips, audio tracks, and still images before any publication step.
+$$\text{Trend Score} = \min(100.0, S_{\text{freshness}} + S_{\text{velocity}} + S_{\text{diversity}} + S_{\text{reliability}} + S_{\text{relevance}})$$
+
+### Component Weights
+
+| Component | Points | Calculation / Heuristic |
+|---|---|---|
+| **Freshness** | 0 – 25 | $\le 2\text{h}: 25$, $\le 6\text{h}: 20$, $\le 12\text{h}: 15$, $\le 24\text{h}: 10$, $\le 48\text{h}: 5$, older: $2$ |
+| **Velocity** | 0 – 20 | Burst rate of items over rolling window ($5+: 20$, $3-4: 15$, $2: 10$, $1: 5$) |
+| **Source Diversity** | 0 – 25 | Corroboration across distinct independent publishers ($4+: 25$, $3: 20$, $2: 14$, $1: 7$) |
+| **Source Authority** | 0 – 20 | Base: $(\text{mean reliability} / 100) \times 15$ + 5 bonus points for official/wire sources |
+| **Topic Relevance** | 0 – 10 | Lexical density matching in headline (up to 6 pts) and summary (up to 4 pts) |
+
+### Explainability Payload
+
+Every Content Opportunity produces a structured explanation payload:
+```json
+{
+  "total_score": 82.5,
+  "confidence_score": 0.85,
+  "urgency": "URGENT",
+  "reasons": [
+    "Item published within last 6 hours (high freshness)",
+    "4 independent publishers reporting",
+    "Corroborated by official government or wire service",
+    "Rapid increase in coverage (4 recent updates)",
+    "Strong headline match for searched topic"
+  ],
+  "breakdown": {
+    "freshness": 25.0,
+    "velocity": 15.0,
+    "source_diversity": 25.0,
+    "source_reliability": 17.5,
+    "topic_relevance": 6.0
+  },
+  "risk_indicators": []
+}
+```
 
 ---
 
-## 4. Trend Score Formulation (Future Data Contract)
+## Duplicate Detection & Grouping
 
-The future Trend Scoring Engine evaluates potential topics across multi-factor dimensions:
+1. **Lightweight Fingerprinting**: A deterministic SHA-256 fingerprint is calculated for every source item:
+   $$\text{Fingerprint} = \text{SHA256}(\text{normalized\_title\_tokens} \parallel \text{canonical\_url})$$
+   Enforced via unique constraint `uq_source_item_tenant_fingerprint` in database.
+2. **Similar Story Groups**: Items within a 48-hour temporal window sharing token Jaccard similarity $\ge 0.30$ are clustered into `SimilarStoryGroup` entities, labeled transparently as **"Potentially related"** (never claiming factual identity).
 
-```python
-class TrendScoreBreakdown:
-    velocity: float          # Speed of conversation acceleration (0-100)
-    relevance: float         # Alignment with tenant's audience & beat (0-100)
-    source_confidence: float # Quality and authority of original sources (0-100)
-    audience_potential: float# Estimated reach and engagement opportunity (0-100)
-    urgency_level: str       # "LOW", "MEDIUM", "HIGH", "BREAKING"
-    recommendation: str      # "MAKE NOW", "VERIFY FIRST", "DO NOT PUBLISH"
-    misinformation_risk: str # "LOW", "ELEVATED", "HIGH"
+---
+
+## Content Opportunity Lifecycle
+
+```
+                ┌───────────────┐
+                │  DISCOVERED   │
+                └───────┬───────┘
+                        │
+        ┌───────────────┴───────────────┐
+        ▼                               ▼
+ ┌──────────────┐                ┌──────────────┐
+ │   ACCEPTED   │                │   REJECTED   │
+ └──────┬───────┘                └──────────────┘
+        │
+        ▼
+ ┌──────────────────────┐
+ │  CONVERTED_TO_STORY  │ ──► Phase 2 Story Created (status: IDEA)
+ └──────────────────────┘
 ```
 
-### Example Future Output (Gorakhpur Regional Beat):
-- **Topic**: Gorakhpur Railway Infrastructure Modernization
-- **Trend Score**: 87 / 100
-- **Relevance**: 94 / 100
-- **Source Confidence**: 91 / 100 (Official Indian Railways Gazette & Press Bureau)
-- **Audience Potential**: 89 / 100
-- **Urgency**: HIGH
-- **Recommendation**: MAKE NOW
+When converted:
+- Story created strictly in `IDEA` status (never auto-approved or published).
+- Tenant ownership preserved.
+- Source citations attached as `StorySource` records.
+- Immutable audit record `OPPORTUNITY_CONVERTED_TO_STORY` created.
+
+---
+
+## Future Roadmap
+
+- **Phase 4**: Vector embedding models (e.g. pgvector or local embeddings) for semantic clustering across multilingual Indian languages.
+- **Phase 5**: Supervised AI research assistant operating strictly within the human editorial sandbox.
