@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "news9-backend"
+version = "0.1.0"
+description = "News 9 AI Content & Newsroom Automation Platform - Phase 1 Foundation"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Platform Engineering Team" }]
+
+dependencies = [
+    "fastapi>=0.115.0,<0.116.0",
+    "uvicorn>=0.34.0,<0.35.0",
+    "pydantic>=2.10.0,<2.11.0",
+    "pydantic-settings>=2.7.0,<2.8.0",
+    "sqlalchemy>=2.0.36,<2.1.0",
+    "asyncpg>=0.30.0,<0.31.0",
+    "alembic>=1.14.0,<1.15.0",
+    "redis>=5.2.0,<5.3.0",
+    "celery>=5.4.0,<5.5.0",
+    "httpx>=0.28.0,<0.29.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0,<8.4.0",
+    "pytest-asyncio>=0.25.0,<0.26.0",
+    "aiosqlite>=0.20.0",
+    "ruff>=0.8.0,<0.9.0",
+    "mypy>=1.13.0,<1.14.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B"]
+ignore = ["B008"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+ignore_missing_imports = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+pythonpath = ["."]
