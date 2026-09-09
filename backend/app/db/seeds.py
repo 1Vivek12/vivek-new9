@@ -112,6 +112,115 @@ async def seed_news9_tenant(session: AsyncSession) -> Tenant:
             )
         )
 
+    # Seed Initial Categories for News 9
+    from app.db.models.assignment import Assignment
+    from app.db.models.category import Category
+    from app.db.models.source import StorySource
+    from app.db.models.story import Story
+    from app.db.models.version import StoryVersion
+
+    cat_slugs = [
+        ("Gorakhpur Region", "gorakhpur-region", "Regional news and civic updates from Gorakhpur"),
+        ("Politics", "politics", "State and national political coverage"),
+        ("Technology", "technology", "AI, gadgets, and digital media innovations"),
+        ("Economy", "economy", "Markets, employment, and fiscal developments"),
+    ]
+    created_cats = {}
+    for name, slug, desc in cat_slugs:
+        cat_res = await session.execute(
+            select(Category).where(Category.tenant_id == news9.id, Category.slug == slug)
+        )
+        cat = cat_res.scalar_one_or_none()
+        if not cat:
+            cat = Category(
+                id=str(uuid.uuid4()),
+                tenant_id=news9.id,
+                name=name,
+                slug=slug,
+                description=desc,
+            )
+            session.add(cat)
+        created_cats[slug] = cat
+
+    await session.flush()
+
+    # Seed sample assignment
+    assign_res = await session.execute(
+        select(Assignment).where(
+            Assignment.tenant_id == news9.id,
+            Assignment.title == "Gorakhpur Railway Modernization Coverage",
+        )
+    )
+    sample_assignment = assign_res.scalar_one_or_none()
+    if not sample_assignment:
+        sample_assignment = Assignment(
+            id=str(uuid.uuid4()),
+            tenant_id=news9.id,
+            title="Gorakhpur Railway Modernization Coverage",
+            description="Investigate platform enhancements and high-speed corridor progress.",
+            priority="HIGH",
+            status="IN_PROGRESS",
+            assigned_to_user_id=editor_user.id,
+            created_by_user_id=admin_user.id,
+        )
+        session.add(sample_assignment)
+        await session.flush()
+
+    # Seed sample story with version and official source
+    story_res = await session.execute(
+        select(Story).where(
+            Story.tenant_id == news9.id,
+            Story.slug == "gorakhpur-railway-station-overhaul-2026",
+        )
+    )
+    sample_story = story_res.scalar_one_or_none()
+    if not sample_story:
+        sample_story = Story(
+            id=str(uuid.uuid4()),
+            tenant_id=news9.id,
+            title="Gorakhpur Railway Station Overhaul Set for Mid-2026 Launch",
+            slug="gorakhpur-railway-station-overhaul-2026",
+            summary="New passenger terminals and world-class concourse nearing completion.",
+            category_id=created_cats["gorakhpur-region"].id,
+            assignment_id=sample_assignment.id,
+            priority="HIGH",
+            status="DRAFT",
+            editorial_owner_id=editor_user.id,
+            created_by_user_id=editor_user.id,
+        )
+        session.add(sample_story)
+        await session.flush()
+
+        # Seed Source (official release)
+        sample_source = StorySource(
+            id=str(uuid.uuid4()),
+            tenant_id=news9.id,
+            story_id=sample_story.id,
+            title="North Eastern Railway Press Bureau Briefing",
+            url="https://ner.indianrailways.gov.in/press_releases/overhaul_2026",
+            publisher_name="Ministry of Railways, India",
+            source_type="OFFICIAL",
+            reliability_score=98.0,
+            rights_metadata={"license": "Public Domain / Government Gazette"},
+            notes="Verified against official gazette notification.",
+            created_by_user_id=editor_user.id,
+        )
+        session.add(sample_source)
+
+        # Seed Version 1
+        sample_version = StoryVersion(
+            id=str(uuid.uuid4()),
+            tenant_id=news9.id,
+            story_id=sample_story.id,
+            version_number=1,
+            headline="Gorakhpur Railway Station Modernization Reaches 85% Completion",
+            body_payload={"lead": "Work on the state-of-the-art terminal is accelerating..."},
+            body_text="Work on the state-of-the-art terminal in Gorakhpur is accelerating.",
+            change_summary="Initial verified draft with official ministry citations.",
+            created_by_user_id=editor_user.id,
+        )
+        session.add(sample_version)
+
     await session.commit()
     logger.info("Successfully seeded News 9 workspace and initial users.")
     return news9

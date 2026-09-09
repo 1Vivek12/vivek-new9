@@ -1,6 +1,6 @@
 # News 9 AI Content & Newsroom Automation Platform
 
-> **Status**: Phase 1 Multi-Tenant Production Foundation (Verified in test suite)  
+> **Status**: Phase 2 Editorial Content Core (Verified in test suite)  
 > **Target**: Scalable, brand-independent AI content and newsroom automation platform.
 
 ---
@@ -20,17 +20,25 @@ The platform addresses two primary categories of automated content generation:
 
 ---
 
-## 2. Phase 1 Scope: Multi-Tenant Production Foundation
+## 2. Phase 1 & Phase 2 Scope
 
-In Phase 1, only the foundational architecture and boundaries required for future modules are established. Full production pipelines (Trend Radar polling, raw video encoding, social publishing adapters) are intentionally deferred to future phases to ensure rock-solid tenant isolation, security boundaries, and local inference capabilities.
-
-### Key Phase 1 Deliverables:
+### Phase 1 Deliverables (Multi-Tenant Production Foundation):
 - **Tenant Isolation**: Backend-enforced authorization deriving tenant context from authenticated user identity and role membership. Rejection of forged headers and cross-tenant leakage.
 - **Brand Independence**: Zero hardcoded business logic referencing "News 9". News 9 is seeded as the initial workspace with dynamic branding configuration.
 - **AI Provider Abstraction**: Local inference-first design supporting Ollama and OpenAI-compatible endpoints with zero dependency on paid cloud AI APIs.
 - **Agent Runtime Boundary**: `AgentRuntime` interface with `PrimeAgentRuntime` adapter marked as `PENDING_VERIFICATION` (non-executing, safe sandbox boundary).
 - **Service Boundaries**: FastAPI backend, Celery + Redis worker queue, PostgreSQL persistence via asyncpg, and React frontend shell.
-- **Comprehensive Documentation**: Architectural specifications for Multi-Tenancy, Agent Runtime, Trend Radar, and Security Baselines.
+
+### Phase 2 Deliverables (Editorial Content Core):
+- **Editorial Domain Models**: Tenant-scoped models for `Category`, `Assignment`, `Story`, `StorySource`, and `StoryVersion`.
+- **Assignment Desk Foundation**: Work orders, priority tracking, due dates, and reporting delegator-assignee relationships.
+- **Deterministic Editorial Lifecycle**: State machine with strict transition controls (`IDEA` &rarr; `ASSIGNED` &rarr; `RESEARCHING` &rarr; `DRAFT` &rarr; `VALIDATION` &rarr; `APPROVAL_REQUIRED` &rarr; `APPROVED` &rarr; `PUBLISHED`), mandatory rejection reasons, and human sign-off records.
+- **Source & Citation Metadata**: Reliable source tracking, reliability confidence scores, and licensing rights metadata without web scraping or crawling.
+- **Immutable Content Versioning**: Append-only draft snapshots capturing revisions, headlines, and change summaries.
+- **Tenant Authorization & IDOR/BOLA Protection**: Rigorous backend isolation blocking unauthorized or cross-tenant reads and mutations.
+- **Audit Logging**: Comprehensive tenant-isolated audit trail for all editorial actions.
+- **Newsroom Frontend Workbench**: Dedicated UI components for the Assignment Desk, Story Management, Sources, Version History, and Lifecycle Actions.
+- **Alembic Database Migrations**: Versioned database migrations for Phase 1 and Phase 2 models.
 
 ---
 

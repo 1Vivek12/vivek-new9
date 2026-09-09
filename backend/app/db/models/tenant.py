@@ -22,6 +22,4 @@ class Tenant(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     memberships = relationship(
         "TenantMembership", back_populates="tenant", cascade="all, delete-orphan"
     )
-    audit_logs = relationship(
-        "AuditLog", back_populates="tenant", cascade="all, delete-orphan"
-    )
+    audit_logs = relationship("AuditLog", back_populates="tenant", cascade="all, delete-orphan")

@@ -42,9 +42,7 @@ async def test_path_traversal_attack_is_strictly_blocked(temp_storage: LocalStor
     traversal_path = "../../etc/passwd"
 
     with pytest.raises(PermissionError) as exc_info:
-        await temp_storage.save_file(
-            tenant_id, traversal_path, io.BytesIO(b"malicious payload")
-        )
+        await temp_storage.save_file(tenant_id, traversal_path, io.BytesIO(b"malicious payload"))
     assert "outside tenant boundary" in str(exc_info.value)
 
 
