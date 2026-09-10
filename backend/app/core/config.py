@@ -60,6 +60,24 @@ class Settings(BaseSettings):
     # Storage
     STORAGE_ROOT: str = Field(default="./data/storage")
 
+    # Phase 5 Media & Video Production
+    FFMPEG_BINARY_PATH: str = Field(default="ffmpeg")
+    FFPROBE_BINARY_PATH: str = Field(default="ffprobe")
+    WHISPER_MODEL_NAME: str = Field(default="base")
+    MAX_MEDIA_UPLOAD_SIZE_BYTES: int = Field(default=524_288_000)  # 500 MB
+    MAX_MEDIA_DURATION_SECONDS: int = Field(default=7200)  # 2 Hours
+    MAX_MEDIA_RESOLUTION_WIDTH: int = Field(default=3840)  # 4K UHD
+    MAX_MEDIA_RESOLUTION_HEIGHT: int = Field(default=2160)
+    MAX_CONCURRENT_MEDIA_JOBS_PER_TENANT: int = Field(default=3)
+    MAX_TEMP_DISK_USAGE_BYTES: int = Field(default=2_147_483_648)  # 2 GB
+    MAX_DERIVATIVE_OUTPUT_SIZE_BYTES: int = Field(default=524_288_000)  # 500 MB
+    MAX_EXTRACTED_KEYFRAMES: int = Field(default=30)
+    MAX_TRANSCRIPT_LENGTH_CHARS: int = Field(default=100_000)
+    MAX_OCR_OUTPUT_CHARS: int = Field(default=10_000)
+    MAX_DERIVATIVES_PER_MEDIA: int = Field(default=10)
+    MEDIA_PROCESSING_TIMEOUT_SECONDS: int = Field(default=180)  # 3 minutes
+    MAX_MEDIA_JOB_RETRIES: int = Field(default=3)
+
     # AI Provider (Local inference priority)
     AI_PROVIDER_TYPE: str = Field(default="ollama")
     OLLAMA_BASE_URL: str = Field(default="http://localhost:11434")

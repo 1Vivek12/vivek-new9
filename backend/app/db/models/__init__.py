@@ -4,6 +4,18 @@ from app.db.base import Base
 from app.db.models.assignment import Assignment
 from app.db.models.audit import AuditLog
 from app.db.models.category import Category
+from app.db.models.media import (
+    ClipCandidate,
+    MediaAsset,
+    MediaDerivative,
+    MediaProcessingJob,
+    OCRResult,
+    Scene,
+    SubtitleTrack,
+    Transcript,
+    TranscriptSegment,
+    VisualAsset,
+)
 from app.db.models.membership import TenantMembership
 from app.db.models.research import (
     AIContentPlan,
@@ -42,4 +54,14 @@ __all__ = [
     "ResearchBrief",
     "AIContentPlan",
     "AIOutput",
+    "MediaAsset",
+    "MediaDerivative",
+    "MediaProcessingJob",
+    "Transcript",
+    "TranscriptSegment",
+    "Scene",
+    "OCRResult",
+    "ClipCandidate",
+    "SubtitleTrack",
+    "VisualAsset",
 ]

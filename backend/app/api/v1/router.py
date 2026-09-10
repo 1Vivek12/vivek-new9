@@ -7,6 +7,7 @@ from app.api.v1.assignments import router as assignments_router
 from app.api.v1.audit import router as audit_router
 from app.api.v1.categories import router as categories_router
 from app.api.v1.health import router as health_router
+from app.api.v1.media import router as media_router
 from app.api.v1.opportunities import router as opportunities_router
 from app.api.v1.research import router as research_router
 from app.api.v1.sources import router as sources_router
@@ -26,3 +27,4 @@ api_v1_router.include_router(trends_router)
 api_v1_router.include_router(opportunities_router)
 api_v1_router.include_router(research_router)
 api_v1_router.include_router(ai_content_router)
+api_v1_router.include_router(media_router)
