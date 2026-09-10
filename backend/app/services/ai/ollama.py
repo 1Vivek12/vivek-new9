@@ -28,6 +28,7 @@ class OllamaProvider(AIProvider):
         system_prompt: Optional[str] = None,
         model: Optional[str] = None,
         options: Optional[Dict[str, Any]] = None,
+        format: Optional[str] = None,
     ) -> str:
         selected_model = model or self.default_model
         payload: Dict[str, Any] = {
@@ -39,6 +40,8 @@ class OllamaProvider(AIProvider):
             payload["system"] = system_prompt
         if options:
             payload["options"] = options
+        if format:
+            payload["format"] = format
 
         url = f"{self.base_url}/api/generate"
         try:
@@ -50,6 +53,32 @@ class OllamaProvider(AIProvider):
         except httpx.HTTPError as e:
             logger.error(f"Ollama generation failed at {url}: {e}")
             raise RuntimeError(f"Ollama request error: {e}") from e
+
+    async def generate_structured(
+        self,
+        prompt: str,
+        schema_class: Any,
+        system_prompt: Optional[str] = None,
+        model: Optional[str] = None,
+        options: Optional[Dict[str, Any]] = None,
+    ) -> Any:
+        """Generate structured response validated against a Pydantic schema."""
+        raw_json = await self.generate_text(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            model=model,
+            options=options,
+            format="json",
+        )
+        try:
+            return schema_class.model_validate_json(raw_json)
+        except Exception as e:
+            logger.error(
+                f"Failed to parse structured response: {e}. "
+                f"Raw response: {raw_json[:150]}"
+            )
+            raise ValueError(f"Invalid structured JSON response from model: {e}") from e
+
 
     async def health_check(self) -> bool:
         """Check if local Ollama daemon is reachable."""

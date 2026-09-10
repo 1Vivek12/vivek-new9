@@ -5,6 +5,14 @@ from app.db.models.assignment import Assignment
 from app.db.models.audit import AuditLog
 from app.db.models.category import Category
 from app.db.models.membership import TenantMembership
+from app.db.models.research import (
+    AIContentPlan,
+    AIOutput,
+    ResearchBrief,
+    ResearchClaim,
+    ResearchEvidence,
+    ResearchJob,
+)
 from app.db.models.source import StorySource
 from app.db.models.source_registry import Source
 from app.db.models.story import Story
@@ -28,4 +36,10 @@ __all__ = [
     "SourceItem",
     "SimilarStoryGroup",
     "ContentOpportunity",
+    "ResearchJob",
+    "ResearchEvidence",
+    "ResearchClaim",
+    "ResearchBrief",
+    "AIContentPlan",
+    "AIOutput",
 ]

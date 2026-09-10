@@ -24,6 +24,10 @@ ROLE_PERMISSIONS = {
         "MANAGE_SOURCES",
         "VIEW_TRENDS",
         "MANAGE_OPPORTUNITIES",
+        "TRIGGER_RESEARCH",
+        "VIEW_RESEARCH",
+        "GENERATE_AI_CONTENT",
+        "REVIEW_AI_CONTENT",
     },
     "TENANT_OWNER": {
         "VIEW_EDITORIAL",
@@ -41,6 +45,10 @@ ROLE_PERMISSIONS = {
         "MANAGE_SOURCES",
         "VIEW_TRENDS",
         "MANAGE_OPPORTUNITIES",
+        "TRIGGER_RESEARCH",
+        "VIEW_RESEARCH",
+        "GENERATE_AI_CONTENT",
+        "REVIEW_AI_CONTENT",
     },
     "TENANT_ADMIN": {
         "VIEW_EDITORIAL",
@@ -58,6 +66,10 @@ ROLE_PERMISSIONS = {
         "MANAGE_SOURCES",
         "VIEW_TRENDS",
         "MANAGE_OPPORTUNITIES",
+        "TRIGGER_RESEARCH",
+        "VIEW_RESEARCH",
+        "GENERATE_AI_CONTENT",
+        "REVIEW_AI_CONTENT",
     },
     "EDITOR": {
         "VIEW_EDITORIAL",
@@ -75,6 +87,10 @@ ROLE_PERMISSIONS = {
         "MANAGE_SOURCES",
         "VIEW_TRENDS",
         "MANAGE_OPPORTUNITIES",
+        "TRIGGER_RESEARCH",
+        "VIEW_RESEARCH",
+        "GENERATE_AI_CONTENT",
+        "REVIEW_AI_CONTENT",
     },
     "CONTENT_MANAGER": {
         "VIEW_EDITORIAL",
@@ -90,6 +106,10 @@ ROLE_PERMISSIONS = {
         "VIEW_SOURCES",
         "VIEW_TRENDS",
         "MANAGE_OPPORTUNITIES",
+        "TRIGGER_RESEARCH",
+        "VIEW_RESEARCH",
+        "GENERATE_AI_CONTENT",
+        "REVIEW_AI_CONTENT",
     },
     "REPORTER": {
         "VIEW_EDITORIAL",
@@ -100,6 +120,9 @@ ROLE_PERMISSIONS = {
         "REQUEST_APPROVAL",
         "VIEW_SOURCES",
         "VIEW_TRENDS",
+        "TRIGGER_RESEARCH",
+        "VIEW_RESEARCH",
+        "GENERATE_AI_CONTENT",
     },
     "CREATOR": {
         "VIEW_EDITORIAL",
@@ -110,16 +133,21 @@ ROLE_PERMISSIONS = {
         "REQUEST_APPROVAL",
         "VIEW_SOURCES",
         "VIEW_TRENDS",
+        "TRIGGER_RESEARCH",
+        "VIEW_RESEARCH",
+        "GENERATE_AI_CONTENT",
     },
     "ANALYST": {
         "VIEW_EDITORIAL",
         "VIEW_SOURCES",
         "VIEW_TRENDS",
+        "VIEW_RESEARCH",
     },
     "VIEWER": {
         "VIEW_EDITORIAL",
         "VIEW_SOURCES",
         "VIEW_TRENDS",
+        "VIEW_RESEARCH",
     },
 }
 

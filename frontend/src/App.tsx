@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { HealthDashboard } from './components/HealthDashboard';
 import { EditorialNewsroom } from './components/EditorialNewsroom';
 import { TrendRadarWorkspace } from './components/TrendRadarWorkspace';
+import { AIResearchWorkspace } from './components/AIResearchWorkspace';
 
 export const App = () => {
-  const [activeView, setActiveView] = useState<'radar' | 'editorial' | 'foundation'>('radar');
+  const [activeView, setActiveView] = useState<'radar' | 'editorial' | 'research' | 'foundation'>('research');
 
   // First seeded tenant: News 9 workspace profile
   const tenantProfile = {
@@ -39,14 +40,14 @@ export const App = () => {
             <div>
               <h1 style={{ fontSize: '1.25rem', fontWeight: 700 }}>News 9 Automation Platform</h1>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                Trend Radar &amp; Source Monitoring &middot; Phase 3 Workspace
+                AI Research &amp; Content Intelligence &middot; Phase 4 Workspace
               </p>
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span className="badge badge-green">Phase 3 Verified</span>
+          <span className="badge badge-green">Phase 4 Active</span>
         </div>
       </header>
 
@@ -60,6 +61,21 @@ export const App = () => {
           paddingBottom: '0.5rem',
         }}
       >
+        <button
+          onClick={() => setActiveView('research')}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: activeView === 'research' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontWeight: activeView === 'research' ? 700 : 500,
+            borderBottom: activeView === 'research' ? '2px solid var(--accent-red)' : 'none',
+            paddingBottom: '0.5rem',
+            cursor: 'pointer',
+            fontSize: '1rem',
+          }}
+        >
+          🤖 AI Intelligence &amp; Research
+        </button>
         <button
           onClick={() => setActiveView('radar')}
           style={{
@@ -108,11 +124,14 @@ export const App = () => {
       </nav>
 
       <main>
-        {activeView === 'radar' ? (
+        {activeView === 'research' ? (
+          <AIResearchWorkspace />
+        ) : activeView === 'radar' ? (
           <TrendRadarWorkspace />
         ) : activeView === 'editorial' ? (
           <EditorialNewsroom />
         ) : (
+
           <>
             <div className="card">
               <h2>Active Workspace Profile (First Seeded Tenant)</h2>
