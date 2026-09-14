@@ -121,3 +121,23 @@ npm run dev
 2. **No Paid AI Dependency**: Ollama and local OpenAI-compatible endpoints are the primary targets.
 3. **Strict Human Approval**: Content publication requires verified human approval (`UnapprovedContentPublicationError` guard).
 4. **Tenant Security**: All data access is authorized via authenticated tenant membership.
+
+---
+
+## 6. Runtime Verification & Provider Operational Status
+
+### Core Platform Subsystems
+| Subsystem | Status | Verification Summary |
+| :--- | :---: | :--- |
+| **Phase 1: Foundation** | **GREEN** | Multi-tenant context isolation, RBAC, AES-256-GCM vault, storage containment fully verified. |
+| **Phase 2: Editorial Core** | **GREEN** | Full lifecycle transitions, immutability, rejection validation, human approval gates verified. |
+| **Phase 3: Trend Radar** | **GREEN** | SSRF hop-by-hop verification, XXE prevention (`<!DOCTYPE`/`<!ENTITY`), RSS/Atom parsing verified. |
+| **Phase 4: AI Research** | **GREEN** | 4-tier prompt defense, boundary breakouts escaping, zero autonomous approval verified. |
+| **Phase 5: Media Production** | **YELLOW** | Hardened subprocess and MIME checks verified; requires host binaries (`ffmpeg`/`whisper`) for live processing. |
+| **Phase 6: Publishing** | **YELLOW** | Manifest hashing, ledger, and provider fail-safe boundaries verified; requires live platform API credentials. |
+
+### Infrastructure & External Providers
+- **PostgreSQL**: Alembic migrations 001–006 verified against live engine (41 tables, all FKs/indexes).
+- **Redis / Celery**: Task pipeline logic, state progression, and credential isolation verified.
+- **FFmpeg / FFprobe / Whisper**: `NOT_CONFIGURED` (host runtime binaries not in PATH; returns explicit `ToolUnavailableError`).
+- **YouTube / Facebook / Instagram / WhatsApp / Website CMS**: `NOT_CONFIGURED` (live third-party production credentials not configured; returns explicit `ProviderNotConfiguredError` rather than fabricating success).
