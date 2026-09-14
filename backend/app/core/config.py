@@ -1,6 +1,6 @@
 """Configuration module with typed Pydantic v2 settings."""
 
-from typing import List
+from typing import List, Optional
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -76,7 +76,25 @@ class Settings(BaseSettings):
     MAX_OCR_OUTPUT_CHARS: int = Field(default=10_000)
     MAX_DERIVATIVES_PER_MEDIA: int = Field(default=10)
     MEDIA_PROCESSING_TIMEOUT_SECONDS: int = Field(default=180)  # 3 minutes
-    MAX_MEDIA_JOB_RETRIES: int = Field(default=3)
+    # Phase 6 Publishing & Distribution
+    PUBLISHING_ENCRYPTION_KEY: Optional[str] = Field(default=None)
+    META_GRAPH_API_VERSION: str = Field(default="v21.0")
+    META_APP_ID: Optional[str] = Field(default=None)
+    META_APP_SECRET: Optional[str] = Field(default=None)
+    YOUTUBE_CLIENT_ID: Optional[str] = Field(default=None)
+    YOUTUBE_CLIENT_SECRET: Optional[str] = Field(default=None)
+    YOUTUBE_WEBHOOK_SECRET: Optional[str] = Field(default=None)
+    WHATSAPP_PHONE_NUMBER_ID: Optional[str] = Field(default=None)
+    WHATSAPP_WABA_ID: Optional[str] = Field(default=None)
+    NEWS9_INSTAGRAM_EDITORIAL_MAX_SECONDS: int = Field(default=90)
+    NEWS9_YOUTUBE_SHORTS_EDITORIAL_MAX_SECONDS: int = Field(default=180)
+    YOUTUBE_TENANT_MAX_UPLOADS_PER_HOUR: int = Field(default=4)  # Application safety limit
+    FACEBOOK_MAX_POSTS_PER_HOUR: int = Field(default=10)  # Application safety limit
+    INSTAGRAM_MAX_POSTS_PER_HOUR: int = Field(default=10)  # Application safety limit
+    WHATSAPP_MESSAGES_PER_SECOND_LIMIT: int = Field(default=20)  # Canonical safety throttle
+    WHATSAPP_DAILY_RECIPIENTS_LIMIT: int = Field(default=1000)  # Application safety limit
+    EXTERNAL_MEDIA_BASE_URL: str = Field(default="http://localhost:8000")
+    META_WEBHOOK_VERIFY_TOKEN: str = Field(default="news9_meta_verify_token")
 
     # AI Provider (Local inference priority)
     AI_PROVIDER_TYPE: str = Field(default="ollama")
@@ -108,3 +126,8 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def get_settings() -> Settings:
+    """Returns application settings singleton."""
+    return settings

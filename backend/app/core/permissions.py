@@ -35,6 +35,12 @@ ROLE_PERMISSIONS = {
         "GENERATE_DERIVATIVES",
         "REVIEW_MEDIA",
         "EDIT_MEDIA_METADATA",
+        "VIEW_PUBLISHING",
+        "MANAGE_DESTINATIONS",
+        "CREATE_PACKAGE",
+        "APPROVE_PUBLISHING",
+        "TRIGGER_PUBLISH",
+        "CANCEL_PUBLISH",
     },
     "TENANT_OWNER": {
         "VIEW_EDITORIAL",
@@ -63,6 +69,12 @@ ROLE_PERMISSIONS = {
         "GENERATE_DERIVATIVES",
         "REVIEW_MEDIA",
         "EDIT_MEDIA_METADATA",
+        "VIEW_PUBLISHING",
+        "MANAGE_DESTINATIONS",
+        "CREATE_PACKAGE",
+        "APPROVE_PUBLISHING",
+        "TRIGGER_PUBLISH",
+        "CANCEL_PUBLISH",
     },
     "TENANT_ADMIN": {
         "VIEW_EDITORIAL",
@@ -91,6 +103,12 @@ ROLE_PERMISSIONS = {
         "GENERATE_DERIVATIVES",
         "REVIEW_MEDIA",
         "EDIT_MEDIA_METADATA",
+        "VIEW_PUBLISHING",
+        "MANAGE_DESTINATIONS",
+        "CREATE_PACKAGE",
+        "APPROVE_PUBLISHING",
+        "TRIGGER_PUBLISH",
+        "CANCEL_PUBLISH",
     },
     "EDITOR": {
         "VIEW_EDITORIAL",
@@ -119,6 +137,12 @@ ROLE_PERMISSIONS = {
         "GENERATE_DERIVATIVES",
         "REVIEW_MEDIA",
         "EDIT_MEDIA_METADATA",
+        "VIEW_PUBLISHING",
+        "MANAGE_DESTINATIONS",
+        "CREATE_PACKAGE",
+        "APPROVE_PUBLISHING",
+        "TRIGGER_PUBLISH",
+        "CANCEL_PUBLISH",
     },
     "CONTENT_MANAGER": {
         "VIEW_EDITORIAL",
@@ -145,6 +169,11 @@ ROLE_PERMISSIONS = {
         "GENERATE_DERIVATIVES",
         "REVIEW_MEDIA",
         "EDIT_MEDIA_METADATA",
+        "VIEW_PUBLISHING",
+        "CREATE_PACKAGE",
+        "APPROVE_PUBLISHING",
+        "TRIGGER_PUBLISH",
+        "CANCEL_PUBLISH",
     },
     "REPORTER": {
         "VIEW_EDITORIAL",
@@ -164,6 +193,8 @@ ROLE_PERMISSIONS = {
         "TRANSCRIBE_MEDIA",
         "GENERATE_DERIVATIVES",
         "EDIT_MEDIA_METADATA",
+        "VIEW_PUBLISHING",
+        "CREATE_PACKAGE",
     },
     "CREATOR": {
         "VIEW_EDITORIAL",
@@ -183,6 +214,8 @@ ROLE_PERMISSIONS = {
         "TRANSCRIBE_MEDIA",
         "GENERATE_DERIVATIVES",
         "EDIT_MEDIA_METADATA",
+        "VIEW_PUBLISHING",
+        "CREATE_PACKAGE",
     },
     "ANALYST": {
         "VIEW_EDITORIAL",
@@ -190,6 +223,7 @@ ROLE_PERMISSIONS = {
         "VIEW_TRENDS",
         "VIEW_RESEARCH",
         "VIEW_MEDIA",
+        "VIEW_PUBLISHING",
     },
     "VIEWER": {
         "VIEW_EDITORIAL",
@@ -197,6 +231,7 @@ ROLE_PERMISSIONS = {
         "VIEW_TRENDS",
         "VIEW_RESEARCH",
         "VIEW_MEDIA",
+        "VIEW_PUBLISHING",
     },
 }
 

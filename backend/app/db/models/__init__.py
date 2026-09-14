@@ -17,6 +17,19 @@ from app.db.models.media import (
     VisualAsset,
 )
 from app.db.models.membership import TenantMembership
+from app.db.models.publishing import (
+    AccountCredential,
+    ConnectedAccount,
+    OAuthState,
+    PlatformPayload,
+    PublishedItem,
+    PublishingApprovalEvent,
+    PublishingAttempt,
+    PublishingDestination,
+    PublishingJob,
+    PublishingPackage,
+    WebhookEvent,
+)
 from app.db.models.research import (
     AIContentPlan,
     AIOutput,
@@ -64,4 +77,15 @@ __all__ = [
     "ClipCandidate",
     "SubtitleTrack",
     "VisualAsset",
+    "PublishingDestination",
+    "ConnectedAccount",
+    "AccountCredential",
+    "OAuthState",
+    "PublishingPackage",
+    "PlatformPayload",
+    "PublishingApprovalEvent",
+    "PublishingJob",
+    "PublishingAttempt",
+    "PublishedItem",
+    "WebhookEvent",
 ]

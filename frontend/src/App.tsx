@@ -4,9 +4,10 @@ import { EditorialNewsroom } from './components/EditorialNewsroom';
 import { TrendRadarWorkspace } from './components/TrendRadarWorkspace';
 import { AIResearchWorkspace } from './components/AIResearchWorkspace';
 import { MediaProductionWorkspace } from './components/MediaProductionWorkspace';
+import { PublishingCommandCenter } from './components/PublishingCommandCenter';
 
 export const App = () => {
-  const [activeView, setActiveView] = useState<'media' | 'research' | 'radar' | 'editorial' | 'foundation'>('media');
+  const [activeView, setActiveView] = useState<'publishing' | 'media' | 'research' | 'radar' | 'editorial' | 'foundation'>('publishing');
 
   // First seeded tenant: News 9 workspace profile
   const tenantProfile = {
@@ -41,14 +42,14 @@ export const App = () => {
             <div>
               <h1 style={{ fontSize: '1.25rem', fontWeight: 700 }}>News 9 Automation Platform</h1>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                Media &amp; Video Production &middot; Phase 5 Workspace
+                Publishing &amp; Distribution &middot; Phase 6 Workspace
               </p>
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span className="badge badge-green">Phase 5 Active</span>
+          <span className="badge badge-green">Phase 6 Active</span>
         </div>
       </header>
 
@@ -62,6 +63,21 @@ export const App = () => {
           paddingBottom: '0.5rem',
         }}
       >
+        <button
+          onClick={() => setActiveView('publishing')}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: activeView === 'publishing' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontWeight: activeView === 'publishing' ? 700 : 500,
+            borderBottom: activeView === 'publishing' ? '2px solid var(--accent-red)' : 'none',
+            paddingBottom: '0.5rem',
+            cursor: 'pointer',
+            fontSize: '1rem',
+          }}
+        >
+          🚀 Publishing &amp; Distribution
+        </button>
         <button
           onClick={() => setActiveView('media')}
           style={{
@@ -140,7 +156,9 @@ export const App = () => {
       </nav>
 
       <main>
-        {activeView === 'media' ? (
+        {activeView === 'publishing' ? (
+          <PublishingCommandCenter />
+        ) : activeView === 'media' ? (
           <MediaProductionWorkspace />
         ) : activeView === 'research' ? (
           <AIResearchWorkspace />
