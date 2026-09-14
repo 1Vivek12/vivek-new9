@@ -126,9 +126,20 @@ class YouTubeProvider(PublishingProvider):
         primary_asset = media_assets[0]
         raw_storage_path = str(primary_asset.get("storage_path") or "")
         from pathlib import Path
-        resolved_path = Path(raw_storage_path)
-        if not resolved_path.is_absolute():
-            resolved_path = Path(settings.STORAGE_ROOT) / resolved_path
+        storage_root = Path(settings.STORAGE_ROOT).resolve()
+        candidate = Path(raw_storage_path)
+        if candidate.is_absolute():
+            resolved_path = candidate.resolve()
+        else:
+            resolved_path = (storage_root / candidate).resolve()
+
+        try:
+            resolved_path.relative_to(storage_root)
+        except ValueError:
+            return ProviderPublishResult(
+                success=False,
+                error_message="Storage violation: Media file path traverses outside storage root.",
+            )
 
         if not resolved_path.exists() or not resolved_path.is_file():
             return ProviderPublishResult(

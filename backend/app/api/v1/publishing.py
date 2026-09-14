@@ -544,12 +544,17 @@ async def approve_publishing_package(
                 notes=approval_data.rejection_reason,
             )
         else:
+            if not approval_data.rejection_reason or not approval_data.rejection_reason.strip():
+                raise HTTPException(
+                    status_code=400,
+                    detail="Rejection reason is mandatory and must not be empty.",
+                )
             event = await PublishingPackageService.reject_package(
                 db,
                 package_id=package_id,
                 tenant_id=context.tenant_id,
                 approver_id=context.user_id,
-                rejection_reason=approval_data.rejection_reason or "Editorial rejection",
+                rejection_reason=approval_data.rejection_reason.strip(),
             )
         await db.commit()
         await db.refresh(event)

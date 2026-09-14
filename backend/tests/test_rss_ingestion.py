@@ -126,6 +126,31 @@ def test_malformed_xml_handling():
         connector.parse_feed_content(MALFORMED_FEED, source)
 
 
+def test_xxe_doctype_entity_rejected():
+    """Verify DOCTYPE and ENTITY declarations are rejected immediately to prevent XXE."""
+    source = Source(
+        id="test-src-xxe",
+        tenant_id="tenant-1",
+        name="XXE Feed",
+        source_type="OTHER",
+        feed_url="https://xxe.example.com/rss",
+        created_by_user_id="user-1",
+    )
+    connector = RSSAtomConnector(check_dns=False)
+
+    doctype_payload = b"""<?xml version="1.0"?>
+    <!DOCTYPE foo [<!ELEMENT foo ANY >]>
+    <rss><channel><title>Foo</title></channel></rss>"""
+    with pytest.raises(ValueError, match="DOCTYPE and ENTITY declarations are strictly forbidden"):
+        connector.parse_feed_content(doctype_payload, source)
+
+    entity_payload = b"""<?xml version="1.0"?>
+    <!ENTITY xxe SYSTEM "file:///etc/passwd">
+    <rss><channel><title>&xxe;</title></channel></rss>"""
+    with pytest.raises(ValueError, match="DOCTYPE and ENTITY declarations are strictly forbidden"):
+        connector.parse_feed_content(entity_payload, source)
+
+
 def test_strip_html_and_truncate():
     """Verify HTML stripping and non-retention of full bodies."""
     raw_html = (

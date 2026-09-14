@@ -193,6 +193,16 @@ async def ensure_valid_credentials(
         if tenant_id:
             stmt = stmt.where(ConnectedAccount.tenant_id == tenant_id)
 
+        # Multi-worker / Celery concurrency safety:
+        # In addition to the in-process asyncio.Lock, acquire DB row-level lock
+        # in PostgreSQL production environments so concurrent workers cannot race.
+        bind = getattr(db, "bind", None)
+        if bind is None and hasattr(db, "sync_session"):
+            bind = getattr(db.sync_session, "bind", None)
+        dialect_name = getattr(getattr(bind, "dialect", None), "name", "")
+        if dialect_name and dialect_name != "sqlite":
+            stmt = stmt.with_for_update()
+
         acc_res = await db.execute(stmt)
         account = acc_res.scalar_one_or_none()
         if not account:

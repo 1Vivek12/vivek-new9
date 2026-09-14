@@ -52,3 +52,25 @@ async def test_storage_rejects_empty_tenant_id(temp_storage: LocalStorageProvide
     with pytest.raises(ValueError) as exc_info:
         await temp_storage.save_file("", "file.txt", io.BytesIO(b"content"))
     assert "Tenant ID is required" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_encoded_and_null_byte_path_traversal_is_blocked(
+    temp_storage: LocalStorageProvider,
+):
+    """Verifies that URL-encoded traversal (%2e%2e) and null-byte injection are blocked."""
+    tenant_id = "tenant-news9"
+
+    # URL-encoded traversal
+    with pytest.raises(PermissionError) as exc_info:
+        await temp_storage.save_file(
+            tenant_id, "%2e%2e/%2e%2e/etc/passwd", io.BytesIO(b"malicious")
+        )
+    assert "outside tenant boundary" in str(exc_info.value)
+
+    # Null byte injection
+    with pytest.raises(PermissionError) as exc_info2:
+        await temp_storage.save_file(
+            tenant_id, "safe_path.txt\0/malicious.sh", io.BytesIO(b"malicious")
+        )
+    assert "Null byte" in str(exc_info2.value)

@@ -311,6 +311,11 @@ class PublishingPackageService:
         rejection_reason: str,
     ) -> PublishingApprovalEvent:
         """Appends an immutable human rejection event to the ledger."""
+        if not rejection_reason or not rejection_reason.strip():
+            raise PublishingWorkflowError(
+                "Rejection reason is mandatory and must not be empty when rejecting a package."
+            )
+
         pkg_res = await db.execute(
             select(PublishingPackage).where(
                 PublishingPackage.id == package_id,

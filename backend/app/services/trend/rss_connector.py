@@ -188,8 +188,10 @@ class RSSAtomConnector(SourceConnector):
     ) -> List[NormalizedSourceItem]:
         """Safely parse RSS 2.0, RSS 1.0, or Atom 1.0 XML content."""
         clean_upper = content_bytes.upper()
-        if b"<!ENTITY" in clean_upper:
-            raise ValueError("XML entity declarations (ENTITY) are strictly forbidden.")
+        if b"<!ENTITY" in clean_upper or b"<!DOCTYPE" in clean_upper:
+            raise ValueError(
+                "XML DOCTYPE and ENTITY declarations are strictly forbidden to prevent XXE."
+            )
 
         try:
             parser = ET.XMLParser()

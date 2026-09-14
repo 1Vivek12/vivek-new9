@@ -26,7 +26,10 @@ ADVERSARIAL_INJECTION_PATTERNS = [
     re.compile(r"developer\s+(guidelines?|instructions?|rules?)", re.IGNORECASE),
     re.compile(r"<\s*/?\s*untrusted_source_evidence_boundary\s*>", re.IGNORECASE),
 
-    re.compile(r"(call_tool|execute_tool|execute_command|run_shell|publish_to_)", re.IGNORECASE),
+    re.compile(
+        r"(call_tool|execute_tool|execute_command|run_shell|publish_to_|publish\s+immediately|approve\s+publication)",
+        re.IGNORECASE,
+    ),
     re.compile(r"(secret_key|api_key|password|credential|env\.)", re.IGNORECASE),
     re.compile(r"(eval\s*\(|exec\s*\(|__import__|os\.system)", re.IGNORECASE),
     re.compile(r"(base64\s*-d|from_base64|aWdub3Jl|c3lzdGVt)", re.IGNORECASE),
