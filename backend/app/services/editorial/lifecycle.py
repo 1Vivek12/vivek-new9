@@ -119,5 +119,7 @@ def validate_transition(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Rejection reason is mandatory when transitioning to REJECTED",
             )
+    elif requested_state == EditorialState.PUBLISHED:
+        check_permission(context, "TRIGGER_PUBLISH")
 
     return requested_state

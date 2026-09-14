@@ -117,11 +117,38 @@ class YouTubeProvider(PublishingProvider):
         tags = custom.get("tags", [])
         category_id = custom.get("category_id", "25")
 
-        upload_url = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status"
+        if not media_assets:
+            return ProviderPublishResult(
+                success=False,
+                error_message="YouTube publication requires at least one video media asset.",
+            )
+
+        primary_asset = media_assets[0]
+        raw_storage_path = str(primary_asset.get("storage_path") or "")
+        from pathlib import Path
+        resolved_path = Path(raw_storage_path)
+        if not resolved_path.is_absolute():
+            resolved_path = Path(settings.STORAGE_ROOT) / resolved_path
+
+        if not resolved_path.exists() or not resolved_path.is_file():
+            return ProviderPublishResult(
+                success=False,
+                error_message=(
+                    f"YouTube upload failed: media file not found at '{resolved_path}'."
+                ),
+            )
+
+        file_size = resolved_path.stat().st_size
+
+        upload_url = (
+            "https://www.googleapis.com/upload/youtube/v3/videos"
+            "?uploadType=resumable&part=snippet,status"
+        )
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json; charset=UTF-8",
             "X-Upload-Content-Type": "video/mp4",
+            "X-Upload-Content-Length": str(file_size),
         }
         body_metadata = {
             "snippet": {
@@ -136,7 +163,7 @@ class YouTubeProvider(PublishingProvider):
             },
         }
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(upload_url, headers=headers, json=body_metadata)
             if resp.status_code not in (200, 201):
                 return ProviderPublishResult(
@@ -148,19 +175,64 @@ class YouTubeProvider(PublishingProvider):
                 )
 
             location = resp.headers.get("Location")
-            video_id = (
-                resp.json().get("id")
-                if resp.headers.get("content-type", "").startswith("application/json")
-                else "pending_stream"
+            if not location:
+                res_data = (
+                    resp.json()
+                    if resp.headers.get("content-type", "").startswith("application/json")
+                    else {}
+                )
+                v_id = res_data.get("id")
+                if v_id:
+                    return ProviderPublishResult(
+                        success=True,
+                        external_id=v_id,
+                        url=f"https://www.youtube.com/watch?v={v_id}",
+                        raw_response=res_data,
+                    )
+                return ProviderPublishResult(
+                    success=False,
+                    error_message="YouTube upload failed: no resumable session Location returned.",
+                    raw_response={"status_code": resp.status_code, "body": resp.text},
+                )
+
+            # Step 2: Upload actual video bytes to the session location
+            with open(resolved_path, "rb") as f:
+                video_bytes = f.read()
+
+            upload_headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "video/mp4",
+                "Content-Length": str(len(video_bytes)),
+            }
+            upload_resp = await client.put(
+                location, headers=upload_headers, content=video_bytes, timeout=180.0
             )
+
+            if upload_resp.status_code not in (200, 201):
+                return ProviderPublishResult(
+                    success=False,
+                    error_message=(
+                        f"YouTube video bytes upload failed ({upload_resp.status_code}): "
+                        f"{upload_resp.text}"
+                    ),
+                    raw_response={
+                        "status_code": upload_resp.status_code,
+                        "body": upload_resp.text,
+                    },
+                )
+
+            upload_data = upload_resp.json()
+            video_id = upload_data.get("id")
+            if not video_id:
+                return ProviderPublishResult(
+                    success=False,
+                    error_message="YouTube upload finished but returned no video ID in response.",
+                    raw_response=upload_data,
+                )
 
             return ProviderPublishResult(
                 success=True,
                 external_id=video_id,
-                url=f"https://www.youtube.com/watch?v={video_id}"
-                if video_id != "pending_stream"
-                else None,
-                raw_response=resp.json()
-                if resp.headers.get("content-type", "").startswith("application/json")
-                else {"upload_location": location},
+                url=f"https://www.youtube.com/watch?v={video_id}",
+                raw_response=upload_data,
             )

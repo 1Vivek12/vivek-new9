@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -95,6 +95,12 @@ class Settings(BaseSettings):
     WHATSAPP_DAILY_RECIPIENTS_LIMIT: int = Field(default=1000)  # Application safety limit
     EXTERNAL_MEDIA_BASE_URL: str = Field(default="http://localhost:8000")
     META_WEBHOOK_VERIFY_TOKEN: str = Field(default="news9_meta_verify_token")
+    WEBSITE_CMS_PUBLISH_URL: Optional[str] = Field(
+        default=None, description="Downstream CMS endpoint for News 9 website publishing"
+    )
+    WEBSITE_CMS_API_KEY: Optional[str] = Field(
+        default=None, description="API authorization key for website CMS"
+    )
 
     # AI Provider (Local inference priority)
     AI_PROVIDER_TYPE: str = Field(default="ollama")
@@ -123,6 +129,15 @@ class Settings(BaseSettings):
                 "'postgresql+asyncpg://' (or 'sqlite+aiosqlite://' for local testing)"
             )
         return v
+
+    @model_validator(mode="after")
+    def validate_production_secrets(self) -> "Settings":
+        if self.ENVIRONMENT == "production":
+            if self.SECRET_KEY == "CHANGE_THIS_TO_A_SECURE_RANDOM_SECRET_KEY_MIN_32_BYTES":
+                raise ValueError(
+                    "CRITICAL SECURITY: Insecure default SECRET_KEY cannot be used in production."
+                )
+        return self
 
 
 settings = Settings()

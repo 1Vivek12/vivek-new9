@@ -601,6 +601,17 @@ async def test_real_vs_mock_provider_boundary(db_session: AsyncSession):
             media_assets=[],
         )
 
+    web_provider = provider_registry.get_provider(DestinationType.WEBSITE)
+    assert web_provider.is_mock is False
+    with pytest.raises(ProviderNotConfiguredError):
+        await web_provider.publish(
+            db=db_session,
+            payload=dummy_payload,
+            account=dummy_acc,
+            vault=get_credential_vault(),
+            media_assets=[],
+        )
+
     # Mock provider returns clean mock response with is_mock=True
     mock_p = MockPublishingProvider(destination_type=DestinationType.YOUTUBE)
     res = await mock_p.publish(

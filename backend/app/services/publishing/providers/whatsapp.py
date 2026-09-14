@@ -110,10 +110,38 @@ class WhatsAppProvider(PublishingProvider):
 
         custom = payload.custom_metadata or {}
         recipients = custom.get("recipients", [])
-        if not recipients:
+        daily_limit = getattr(settings, "WHATSAPP_DAILY_RECIPIENTS_LIMIT", 1000)
+        if len(recipients) > daily_limit:
             return ProviderPublishResult(
                 success=False,
-                error_message="WhatsApp dispatch requires at least one recipient phone number.",
+                error_message=(
+                    f"Recipient count ({len(recipients)}) exceeds tenant daily safety limit "
+                    f"of {daily_limit}."
+                ),
+            )
+
+        import re
+        e164_pattern = re.compile(r"^\+[1-9]\d{1,14}$")
+        blocked_recipients = set(custom.get("blocked_recipients", []))
+        opted_out_recipients = set(custom.get("opted_out_recipients", []))
+        excluded = blocked_recipients | opted_out_recipients
+
+        valid_recipients: List[str] = []
+        for r in recipients:
+            clean_r = str(r).strip()
+            if clean_r in excluded:
+                continue
+            if not e164_pattern.match(clean_r):
+                return ProviderPublishResult(
+                    success=False,
+                    error_message=f"Invalid E.164 recipient format: '{clean_r}'.",
+                )
+            valid_recipients.append(clean_r)
+
+        if not valid_recipients:
+            return ProviderPublishResult(
+                success=False,
+                error_message="No consented recipients remaining after opt-out filtering.",
             )
 
         endpoint = f"https://graph.facebook.com/{api_ver}/{phone_number_id}/messages"
@@ -126,7 +154,7 @@ class WhatsAppProvider(PublishingProvider):
         errors: List[str] = []
 
         async with httpx.AsyncClient(timeout=30.0) as client:
-            for recipient in recipients:
+            for recipient in valid_recipients:
                 # Enforce 20 msgs/second token bucket rate limit
                 await rate_limiter.check_and_consume(
                     account.tenant_id, DestinationType.WHATSAPP.value, cost=1.0
@@ -147,21 +175,27 @@ class WhatsAppProvider(PublishingProvider):
 
                 resp = await client.post(endpoint, headers=headers, json=body_data)
                 if resp.status_code == 200:
-                    msg_id = resp.json().get("messages", [{}])[0].get("id")
-                    successful_messages.append(msg_id)
+                    resp_json = resp.json()
+                    msg_id = resp_json.get("messages", [{}])[0].get("id")
+                    if msg_id:
+                        successful_messages.append(msg_id)
                 else:
                     errors.append(f"Recipient {recipient} failed: {resp.text}")
 
-        if not successful_messages and errors:
+        if not successful_messages:
             return ProviderPublishResult(
                 success=False,
-                error_message="; ".join(errors[:3]),
+                error_message=(
+                    "; ".join(errors[:3])
+                    if errors
+                    else "WhatsApp message dispatch failed."
+                ),
                 raw_response={"errors": errors},
             )
 
         return ProviderPublishResult(
             success=True,
-            external_id=successful_messages[0] if successful_messages else "batch_dispatched",
+            external_id=successful_messages[0],
             raw_response={
                 "dispatched_count": len(successful_messages),
                 "message_ids": successful_messages,

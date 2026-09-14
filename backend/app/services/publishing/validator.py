@@ -302,22 +302,52 @@ class PrePublishValidator:
                     message="WhatsApp dispatch requires at least one recipient phone number.",
                 )
             )
-        else:
-            for r in recipients:
-                phone = str(r).strip()
-                if not self.E164_REGEX.match(phone):
-                    issues.append(
-                        ValidationIssue(
-                            category="PLATFORM",
-                            severity="ERROR",
-                            destination_type="WHATSAPP",
-                            field="recipients",
-                            message=(
-                                f"WhatsApp recipient '{phone}' is not in valid E.164 "
-                                f"international format (e.g. +1234567890)."
-                            ),
-                        )
+        daily_limit = getattr(self.settings, "WHATSAPP_DAILY_RECIPIENTS_LIMIT", 1000)
+        if len(recipients) > daily_limit:
+            issues.append(
+                ValidationIssue(
+                    category="POLICY",
+                    severity="ERROR",
+                    destination_type="WHATSAPP",
+                    field="recipients",
+                    message=(
+                        f"Recipient count ({len(recipients)}) exceeds tenant daily safety limit "
+                        f"of {daily_limit}."
+                    ),
+                )
+            )
+
+        opted_out = set(custom.get("opted_out_recipients", [])) | set(
+            custom.get("blocked_recipients", [])
+        )
+        for r in recipients:
+            phone = str(r).strip()
+            if phone in opted_out:
+                issues.append(
+                    ValidationIssue(
+                        category="POLICY",
+                        severity="ERROR",
+                        destination_type="WHATSAPP",
+                        field="recipients",
+                        message=(
+                            f"WhatsApp recipient '{phone}' has opted out or "
+                            "is blocked from dispatch."
+                        ),
                     )
+                )
+            if not self.E164_REGEX.match(phone):
+                issues.append(
+                    ValidationIssue(
+                        category="PLATFORM",
+                        severity="ERROR",
+                        destination_type="WHATSAPP",
+                        field="recipients",
+                        message=(
+                            f"WhatsApp recipient '{phone}' is not in valid E.164 "
+                            f"international format (e.g. +1234567890)."
+                        ),
+                    )
+                )
 
         if len(body) > 4096:
             issues.append(

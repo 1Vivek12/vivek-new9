@@ -1,7 +1,7 @@
 # News 9 AI Content & Newsroom Automation Platform
 
-> **Status**: Phase 2 Editorial Content Core (Verified in test suite)  
-> **Target**: Scalable, brand-independent AI content and newsroom automation platform.
+> **Status**: Phase 1–6 Complete & Production-Hardened
+> **Target**: Scalable, brand-independent multi-tenant AI content, media production, and publishing automation platform.
 
 ---
 
@@ -16,29 +16,40 @@ News 9 is the **first tenant and flagship workspace** of an extensible, multi-te
 
 The platform addresses two primary categories of automated content generation:
 1. **Newsroom Automation**: Real-time topic monitoring, regional/national news updates, fast turnaround reporting, source reliability scoring, and editorial approval workflows.
-2. **General Content & Video Automation**: Topic-to-content generation, raw video processing, transcript extraction, automated edit plans, shorts/reels generation, thumbnail generation, and metadata publishing.
+2. **General Content & Video Automation**: Topic-to-content generation, raw video processing, transcript extraction, automated edit plans, shorts/reels generation, thumbnail generation, and multi-channel distribution.
 
 ---
 
-## 2. Phase 1 & Phase 2 Scope
+## 2. Completed Implementation Phases (Phases 1–6)
 
-### Phase 1 Deliverables (Multi-Tenant Production Foundation):
-- **Tenant Isolation**: Backend-enforced authorization deriving tenant context from authenticated user identity and role membership. Rejection of forged headers and cross-tenant leakage.
-- **Brand Independence**: Zero hardcoded business logic referencing "News 9". News 9 is seeded as the initial workspace with dynamic branding configuration.
-- **AI Provider Abstraction**: Local inference-first design supporting Ollama and OpenAI-compatible endpoints with zero dependency on paid cloud AI APIs.
-- **Agent Runtime Boundary**: `AgentRuntime` interface with `PrimeAgentRuntime` adapter marked as `PENDING_VERIFICATION` (non-executing, safe sandbox boundary).
-- **Service Boundaries**: FastAPI backend, Celery + Redis worker queue, PostgreSQL persistence via asyncpg, and React frontend shell.
+### Phase 1: Multi-Tenant Production Foundation
+- Cryptographic authentication & PBKDF2-HMAC-SHA256 password hashing.
+- Strict `TenantContext` authorization derived from DB membership (zero trust in `X-Tenant-ID`).
+- Local AI provider abstraction (Ollama/OpenAI compatible) and sandboxed runtime boundary.
 
-### Phase 2 Deliverables (Editorial Content Core):
-- **Editorial Domain Models**: Tenant-scoped models for `Category`, `Assignment`, `Story`, `StorySource`, and `StoryVersion`.
-- **Assignment Desk Foundation**: Work orders, priority tracking, due dates, and reporting delegator-assignee relationships.
-- **Deterministic Editorial Lifecycle**: State machine with strict transition controls (`IDEA` &rarr; `ASSIGNED` &rarr; `RESEARCHING` &rarr; `DRAFT` &rarr; `VALIDATION` &rarr; `APPROVAL_REQUIRED` &rarr; `APPROVED` &rarr; `PUBLISHED`), mandatory rejection reasons, and human sign-off records.
-- **Source & Citation Metadata**: Reliable source tracking, reliability confidence scores, and licensing rights metadata without web scraping or crawling.
-- **Immutable Content Versioning**: Append-only draft snapshots capturing revisions, headlines, and change summaries.
-- **Tenant Authorization & IDOR/BOLA Protection**: Rigorous backend isolation blocking unauthorized or cross-tenant reads and mutations.
-- **Audit Logging**: Comprehensive tenant-isolated audit trail for all editorial actions.
-- **Newsroom Frontend Workbench**: Dedicated UI components for the Assignment Desk, Story Management, Sources, Version History, and Lifecycle Actions.
-- **Alembic Database Migrations**: Versioned database migrations for Phase 1 and Phase 2 models.
+### Phase 2: Editorial Content Core
+- Assignment Desk, Story Lifecycle state machine with mandatory human approval gates.
+- Append-only immutable `StoryVersion` snapshots and audit logging.
+
+### Phase 3: Trend Radar & Source Monitoring
+- SSRF-protected safe feed connectors (RSS 2.0 / Atom 1.0) with DNS rebinding and redirect hop validation.
+- TF-IDF topic clustering, trend scoring, and content opportunity discovery.
+
+### Phase 4: AI Research & Content Intelligence
+- Prompt injection defense, untrusted source evidence quarantine, and delimiter neutralization.
+- Structured AI claims extraction, evidence tracing, and content plan generation (no AI self-approval).
+
+### Phase 5: Media & Video Production
+- FFmpeg/FFprobe subprocess execution strictly via argument arrays without `shell=True`.
+- Path traversal containment, media rights policies, subtitles, keyframe extraction, and scene analysis.
+- Explicit tool availability enforcement (`TOOL_UNAVAILABLE` when binaries are missing; mocks test-only).
+
+### Phase 6: Publishing & Distribution
+- Multi-destination publishing: YouTube (Videos & Shorts), Facebook, Instagram, WhatsApp, and News 9 Website.
+- Resumable video chunk upload to YouTube; two-step container flow for Instagram; token-bucket throttle for WhatsApp.
+- AES-256-GCM Credential Vault with AAD tenant/account binding and fresh 96-bit nonces.
+- Deterministic canonical manifest SHA-256 hashing; post-approval mutation invalidation.
+- Human-in-the-loop approval ledger; elimination of fabricated IDs and fake example URLs.
 
 ---
 

@@ -154,6 +154,7 @@ class CredentialVault:
 
 
 _vault_instance: Optional[CredentialVault] = None
+_refresh_locks: Dict[str, Any] = {}
 
 
 def get_credential_vault() -> CredentialVault:
@@ -162,3 +163,49 @@ def get_credential_vault() -> CredentialVault:
     if _vault_instance is None:
         _vault_instance = CredentialVault()
     return _vault_instance
+
+
+async def ensure_valid_credentials(
+    db: Any,
+    account_id: str,
+    tenant_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Public lifecycle entry point to obtain decrypted, valid credentials for an account.
+
+    Serializes concurrent token refreshes using per-account locking.
+    """
+    import asyncio
+
+    from sqlalchemy import select
+
+    from app.db.models.publishing import ConnectedAccount, PublishingDestination
+    from app.services.publishing.providers.registry import provider_registry
+
+    if account_id not in _refresh_locks:
+        _refresh_locks[account_id] = asyncio.Lock()
+    lock = _refresh_locks[account_id]
+
+    async with lock:
+        stmt = select(ConnectedAccount).where(
+            ConnectedAccount.id == account_id,
+            ConnectedAccount.is_deleted.is_(False),
+        )
+        if tenant_id:
+            stmt = stmt.where(ConnectedAccount.tenant_id == tenant_id)
+
+        acc_res = await db.execute(stmt)
+        account = acc_res.scalar_one_or_none()
+        if not account:
+            raise ValueError(f"ConnectedAccount '{account_id}' not found.")
+
+        dest_res = await db.execute(
+            select(PublishingDestination).where(
+                PublishingDestination.id == account.destination_id
+            )
+        )
+        dest = dest_res.scalar_one_or_none()
+        dest_type = dest.destination_type if dest else "MOCK"
+
+        provider = provider_registry.get_provider(dest_type)
+        vault = get_credential_vault()
+        return await provider.ensure_valid_credentials(db=db, account=account, vault=vault)

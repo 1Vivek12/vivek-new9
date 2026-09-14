@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import asyncio
 import time
-import uuid
 from typing import Any, Dict, Optional
 
 from sqlalchemy import select
@@ -189,19 +188,18 @@ async def execute_publish_pipeline(
 
                 attempt.duration_ms = int((time.monotonic() - start_mono) * 1000)
 
-                if result.success:
+                if result.success and result.external_id:
                     attempt.outcome = "SUCCESS"
                     attempt.http_status_code = 200
 
-                    # Record PublishedItem
-                    external_item_id = result.external_id or f"pub_{uuid.uuid4().hex[:12]}"
+                    # Record PublishedItem strictly with verified external ID
                     published_item = PublishedItem(
                         tenant_id=tenant_id,
                         package_id=package_id,
                         account_id=account.id,
                         destination_type=payload.destination_type,
-                        external_item_id=external_item_id,
-                        external_url=result.url or f"https://example.com/posts/{external_item_id}",
+                        external_item_id=result.external_id,
+                        external_url=result.url,
                         published_at=utc_now(),
                         visibility="PUBLIC",
                         platform_state="ACTIVE",
@@ -210,13 +208,17 @@ async def execute_publish_pipeline(
                     published_results.append(
                         {
                             "destination_type": payload.destination_type,
-                            "external_id": external_item_id,
+                            "external_id": result.external_id,
                             "url": published_item.external_url,
                         }
                     )
                 else:
                     attempt.outcome = "PERMANENT_FAILURE"
-                    attempt.sanitized_error_message = result.error_message
+                    attempt.sanitized_error_message = (
+                        result.error_message
+                        if not result.success
+                        else "Provider reported success but returned no external item ID."
+                    )
                     all_success = False
                     failed_count += 1
             except Exception as exc:
@@ -237,7 +239,7 @@ async def execute_publish_pipeline(
             job.job_status = "FAILED"
             package.status = "FAILED"
         else:
-            job.job_status = "FAILED"
+            job.job_status = "PARTIALLY_PUBLISHED"
             package.status = "PARTIALLY_PUBLISHED"
 
         await db.commit()

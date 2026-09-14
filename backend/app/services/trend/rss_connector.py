@@ -128,11 +128,15 @@ class RSSAtomConnector(SourceConnector):
                 f"SSRF policy blocked feed URL '{source.feed_url}': {error_msg}"
             )
 
-        # 2. Fetch feed with bounded timeouts and streaming size check
+        # 2. Fetch feed with bounded timeouts and safe redirect validation
         headers = {
             "User-Agent": "News9-TrendRadar/1.0 (Editorial Discovery Subsystem)",
             "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, */*",
         }
+
+        from urllib.parse import urljoin
+        current_url = source.feed_url
+        content_bytes = b""
 
         async with httpx.AsyncClient(
             timeout=httpx.Timeout(
@@ -141,25 +145,36 @@ class RSSAtomConnector(SourceConnector):
                 write=5.0,
                 pool=5.0,
             ),
-            follow_redirects=True,
-            max_redirects=3,
+            follow_redirects=False,
         ) as client:
-            try:
-                response = await client.get(source.feed_url, headers=headers)
-                response.raise_for_status()
-            except httpx.HTTPError as exc:
-                err_msg = f"Network error fetching feed '{source.feed_url}': {exc}"
-                raise RuntimeError(err_msg) from exc
-
-            # Verify redirect destination if redirected
-            if str(response.url) != source.feed_url:
-                r_safe, r_err = validate_source_url(str(response.url), check_dns=self.check_dns)
-                if not r_safe:
+            for _ in range(4):  # max 3 redirects
+                is_safe, error_msg = validate_source_url(current_url, check_dns=self.check_dns)
+                if not is_safe:
                     raise SSRFValidationError(
-                        f"SSRF violation on redirect to '{response.url}': {r_err}"
+                        f"SSRF policy blocked feed URL '{current_url}': {error_msg}"
                     )
 
-            content_bytes = response.content
+                try:
+                    response = await client.get(current_url, headers=headers)
+                except httpx.HTTPError as exc:
+                    err_msg = f"Network error fetching feed '{current_url}': {exc}"
+                    raise RuntimeError(err_msg) from exc
+
+                if response.is_redirect:
+                    location = response.headers.get("Location")
+                    if not location:
+                        raise RuntimeError(
+                            f"Redirect response from '{current_url}' missing Location header."
+                        )
+                    current_url = urljoin(current_url, location)
+                    continue
+
+                response.raise_for_status()
+                content_bytes = response.content
+                break
+            else:
+                raise RuntimeError(f"Too many redirects fetching feed '{source.feed_url}'.")
+
             if len(content_bytes) > MAX_FEED_PAYLOAD_BYTES:
                 raise ValueError(
                     f"Feed size ({len(content_bytes)}) exceeds limit of {MAX_FEED_PAYLOAD_BYTES}"
@@ -172,8 +187,11 @@ class RSSAtomConnector(SourceConnector):
         self, content_bytes: bytes, source: Source
     ) -> List[NormalizedSourceItem]:
         """Safely parse RSS 2.0, RSS 1.0, or Atom 1.0 XML content."""
+        clean_upper = content_bytes.upper()
+        if b"<!ENTITY" in clean_upper:
+            raise ValueError("XML entity declarations (ENTITY) are strictly forbidden.")
+
         try:
-            # Standard ElementTree XMLParser with entity resolution disabled
             parser = ET.XMLParser()
             root = ET.fromstring(content_bytes, parser=parser)
         except ET.ParseError as pe:

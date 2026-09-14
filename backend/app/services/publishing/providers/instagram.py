@@ -160,21 +160,32 @@ class InstagramProvider(PublishingProvider):
 
             # Step 2: Poll container status
             status_url = f"https://graph.facebook.com/{api_ver}/{creation_id}"
-            for _ in range(5):
+            final_status_code = None
+            for _ in range(10):
                 await asyncio.sleep(2.0)
                 s_resp = await client.get(
                     status_url, params={"access_token": token, "fields": "status_code,status"}
                 )
                 s_json = s_resp.json()
-                code = s_json.get("status_code")
-                if code == "FINISHED":
+                final_status_code = s_json.get("status_code")
+                if final_status_code == "FINISHED":
                     break
-                if code == "ERROR":
+                if final_status_code == "ERROR":
                     return ProviderPublishResult(
                         success=False,
                         error_message="Instagram video container failed processing.",
                         raw_response=s_json,
                     )
+
+            if final_status_code != "FINISHED":
+                return ProviderPublishResult(
+                    success=False,
+                    error_message=(
+                        f"Instagram video container processing timed out without FINISHED state "
+                        f"(current status: {final_status_code})."
+                    ),
+                    raw_response={"status_code": final_status_code},
+                )
 
             # Step 3: Publish container
             pub_url = f"https://graph.facebook.com/{api_ver}/{ig_user_id}/media_publish"

@@ -109,3 +109,17 @@ If any tampering, stale edit, or missing approval is detected, the dispatch abor
 - **YouTube Shorts**: Newsroom editorial ceiling of 180 seconds.
 - **Instagram Reels**: Newsroom editorial ceiling of 90 seconds.
 - **Meta Webhooks**: Verified via `X-Hub-Signature-256` and deduplicated on `UNIQUE(destination_type, external_event_id)`.
+
+### 8. Provider Operational States & Environment Configuration
+The subsystem strictly distinguishes between operational states:
+- **REAL**: Operates against live third-party endpoints (Google YouTube Data API v3, Meta Graph API v21.0, WhatsApp Cloud API, News 9 CMS).
+- **NOT_CONFIGURED**: When credentials or target URLs are absent, providers raise `ProviderNotConfiguredError`. They **never** simulate external success or fabricate fake IDs/URLs.
+- **MOCK**: Explicitly isolated test provider (`MockPublishingProvider`, `is_mock = True`), only enabled in test fixtures.
+
+#### Required Environment Configuration:
+- `PUBLISHING_ENCRYPTION_KEY`: 256-bit AES-GCM key for credential vault (mandatory in production).
+- `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`: Google Cloud OAuth application keys.
+- `META_APP_ID`, `META_APP_SECRET`: Meta Developer App credentials for Facebook, Instagram, and WhatsApp.
+- `META_WEBHOOK_VERIFY_TOKEN`: Verification token for Meta webhook subscription handshakes.
+- `WHATSAPP_PHONE_NUMBER_ID`: WhatsApp Business Cloud API sender phone number ID.
+- `WEBSITE_CMS_PUBLISH_URL`, `WEBSITE_CMS_API_KEY`: Downstream CMS endpoint and API authorization key.
